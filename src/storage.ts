@@ -1,0 +1,46 @@
+import type { Photo } from "./types";
+
+const KEY = "tracam.photos.v1";
+const CHALLENGE_KEY = "tracam.challenges.v1";
+
+export function loadPhotos(): Photo[] {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as Photo[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function savePhotos(photos: Photo[]): void {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(photos));
+  } catch (err) {
+    // Most likely the localStorage quota is full.
+    console.warn("Could not save photos", err);
+    alert(
+      "Tracam ran out of storage space on this device. Try removing a few older photos."
+    );
+  }
+}
+
+export function loadDoneChallenges(): string[] {
+  try {
+    const raw = localStorage.getItem(CHALLENGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveDoneChallenges(ids: string[]): void {
+  try {
+    localStorage.setItem(CHALLENGE_KEY, JSON.stringify(ids));
+  } catch {
+    /* ignore */
+  }
+}
