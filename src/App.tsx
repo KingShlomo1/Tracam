@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import type { Home, Photo, TabId } from "./types";
+import type { Home, Photo, TabId, Trail } from "./types";
 import { usePhotos } from "./hooks/usePhotos";
-import { loadHome, saveHome } from "./storage";
+import { loadHome, saveHome, loadTrails, saveTrails } from "./storage";
 import { detectAnimals } from "./animals";
 import TabBar from "./components/TabBar";
 import MapView from "./components/MapView";
@@ -10,6 +10,7 @@ import GalleryView from "./components/GalleryView";
 import TipsView from "./components/TipsView";
 import PhotoModal from "./components/PhotoModal";
 import HomeModal from "./components/HomeModal";
+import TrailsModal from "./components/TrailsModal";
 
 export default function App() {
   const { photos, addPhoto, updatePhoto, removePhoto } = usePhotos();
@@ -17,6 +18,24 @@ export default function App() {
   const [selected, setSelected] = useState<Photo | null>(null);
   const [home, setHome] = useState<Home>(() => loadHome());
   const [homeOpen, setHomeOpen] = useState(false);
+  const [trails, setTrails] = useState<Trail[]>(() => loadTrails());
+  const [trailsOpen, setTrailsOpen] = useState(false);
+
+  function addTrail(trail: Trail) {
+    setTrails((prev) => {
+      const next = [trail, ...prev];
+      saveTrails(next);
+      return next;
+    });
+  }
+
+  function removeTrail(id: string) {
+    setTrails((prev) => {
+      const next = prev.filter((t) => t.id !== id);
+      saveTrails(next);
+      return next;
+    });
+  }
 
   // Background animal detection: scan any not-yet-scanned photo, one at a time.
   const scanning = useRef(false);
@@ -55,8 +74,11 @@ export default function App() {
         <MapView
           photos={photos}
           home={home}
+          trails={trails}
           onOpen={setSelected}
           onEditHome={() => setHomeOpen(true)}
+          onSaveTrail={addTrail}
+          onManageTrails={() => setTrailsOpen(true)}
         />
       )}
 
@@ -88,6 +110,14 @@ export default function App() {
           home={home}
           onClose={() => setHomeOpen(false)}
           onSave={handleSaveHome}
+        />
+      )}
+
+      {trailsOpen && (
+        <TrailsModal
+          trails={trails}
+          onClose={() => setTrailsOpen(false)}
+          onDelete={removeTrail}
         />
       )}
     </div>

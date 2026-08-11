@@ -452,6 +452,119 @@ button {
   filter: none;
 }
 
+/* ---------- Trail recorder ---------- */
+.record-pill {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 92px;
+  z-index: 550;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--white);
+  color: var(--red-strong);
+  font-weight: 800;
+  font-size: 14px;
+  padding: 11px 18px;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow);
+}
+
+.record-panel {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 92px;
+  max-width: 460px;
+  margin: 0 auto;
+  z-index: 550;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  box-shadow: var(--shadow);
+}
+
+.record-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  padding: 2px 4px 12px;
+}
+
+.record-stats b {
+  font-size: 18px;
+  color: var(--red-strong);
+}
+
+.record-stats .muted {
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.record-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.record-actions .btn {
+  flex: 1;
+}
+
+.rec-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--red-strong);
+  flex: 0 0 auto;
+}
+
+.rec-dot.live {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(247, 108, 108, 0.5);
+  }
+  50% {
+    opacity: 0.6;
+    box-shadow: 0 0 0 8px rgba(247, 108, 108, 0);
+  }
+}
+
+.trail-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  box-shadow: var(--shadow-soft);
+}
+
+.trail-info {
+  flex: 1;
+}
+
+.trail-name {
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.check-del {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--red-tint);
+  font-size: 17px;
+  flex: 0 0 auto;
+}
+
 /* ---------- Tips & challenges ---------- */
 .section {
   padding: 6px 20px 0;

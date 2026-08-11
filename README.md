@@ -12,6 +12,11 @@ Everything is white and light soft red, and rounded and friendly.
 - 🗺️ **Map** — a whole-world map; every photo becomes a rounded photo-pin
 - 🥾 **Hiking trails** — tap the boot button to overlay worldwide hiking trails;
   zoom in anywhere to see the paths
+- 🔴 **Record your own trail** — tap “Record a trail” and walk; Tracam traces
+  your route live, shows distance and time, and saves it to the map (📜 to
+  view/delete your trails)
+- 📱 **Installable** — add Tracam to your home screen and it runs full-screen
+  like a real app, and opens (with your photos) even offline
 - 🏠 **Home** — set any place as your home (defaults to Israel). Search for it or
   use your current location, then tap 🏠 on the map to fly back
 - 🐾 **Animals** — Tracam automatically recognises animals in your photos
@@ -76,6 +81,18 @@ npx wrangler pages deploy dist --project-name tracam
 Cloudflare serves over HTTPS, so the **camera, GPS, and animal detection all
 work on your phone** once it's live. The included `public/_redirects` keeps
 everything routing to the app.
+
+## Install it on your phone
+
+Once Tracam is live over HTTPS (e.g. on Cloudflare Pages):
+
+- **iPhone (Safari):** Share → **Add to Home Screen**
+- **Android (Chrome):** menu → **Install app** (or the install prompt)
+
+It then launches full-screen with its own icon, and the app shell is cached so
+it opens even without a connection. Your photos and trails already live on the
+device, so they're there offline too. (Maps, place names and animal detection
+still need a connection when you use them.)
 
 ## Notes
 

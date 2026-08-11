@@ -1,13 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Polyline,
+  useMap,
+} from "react-leaflet";
 import L from "leaflet";
-import type { Home, Photo } from "../types";
+import type { Home, Photo, Trail } from "../types";
+import { useTrailRecorder } from "../hooks/useTrailRecorder";
 
 interface Props {
   photos: Photo[];
   home: Home;
+  trails: Trail[];
   onOpen: (photo: Photo) => void;
   onEditHome: () => void;
+  onSaveTrail: (trail: Trail) => void;
+  onManageTrails: () => void;
 }
 
 function photoIcon(photo: Photo) {
@@ -29,7 +39,6 @@ const homeIcon = L.divIcon({
   iconAnchor: [20, 38],
 });
 
-/** Fit the map to all pins the first time they load. */
 function FitBounds({ photos, home }: { photos: Photo[]; home: Home }) {
   const map = useMap();
   const didFit = useRef(false);
@@ -54,16 +63,49 @@ function FitBounds({ photos, home }: { photos: Photo[]; home: Home }) {
   return null;
 }
 
-/** Exposes the leaflet map instance to the parent for the control buttons. */
 function MapRef({ onReady }: { onReady: (m: L.Map) => void }) {
   const map = useMap();
   useEffect(() => onReady(map), [map, onReady]);
   return null;
 }
 
-export default function MapView({ photos, home, onOpen, onEditHome }: Props) {
+function elapsed(ms: number): string {
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  const rem = s % 60;
+  return `${m}:${String(rem).padStart(2, "0")}`;
+}
+
+export default function MapView({
+  photos,
+  home,
+  trails,
+  onOpen,
+  onEditHome,
+  onSaveTrail,
+  onManageTrails,
+}: Props) {
   const [showTrails, setShowTrails] = useState(false);
+  const [naming, setNaming] = useState(false);
+  const [trailName, setTrailName] = useState("");
+  const [now, setNow] = useState(Date.now());
   const mapRef = useRef<L.Map | null>(null);
+
+  const { recording, start, stop, cancel } = useTrailRecorder(onSaveTrail);
+
+  // Tick the elapsed-time display while recording.
+  useEffect(() => {
+    if (!recording) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [recording]);
+
+  // Keep the map centred on the walker while recording.
+  useEffect(() => {
+    if (!recording || recording.points.length === 0) return;
+    const last = recording.points[recording.points.length - 1];
+    mapRef.current?.panTo([last.lat, last.lng]);
+  }, [recording]);
 
   const located = useMemo(
     () => photos.filter((p) => p.lat !== 0 || p.lng !== 0),
@@ -72,6 +114,12 @@ export default function MapView({ photos, home, onOpen, onEditHome }: Props) {
 
   function flyHome() {
     mapRef.current?.flyTo([home.lat, home.lng], 6, { duration: 0.8 });
+  }
+
+  function finishNaming() {
+    stop(trailName);
+    setNaming(false);
+    setTrailName("");
   }
 
   return (
@@ -90,7 +138,6 @@ export default function MapView({ photos, home, onOpen, onEditHome }: Props) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution="&copy; OpenStreetMap"
         />
-        {/* Worldwide hiking trails — appear as you zoom in. */}
         {showTrails && (
           <TileLayer
             url="https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png"
@@ -101,6 +148,29 @@ export default function MapView({ photos, home, onOpen, onEditHome }: Props) {
         <FitBounds photos={photos} home={home} />
 
         <Marker position={[home.lat, home.lng]} icon={homeIcon} />
+
+        {/* Saved trails */}
+        {trails.map((t) => (
+          <Polyline
+            key={t.id}
+            positions={t.points.map((p) => [p.lat, p.lng])}
+            pathOptions={{ color: "#f76c6c", weight: 5, opacity: 0.85 }}
+          />
+        ))}
+
+        {/* The trail being recorded right now */}
+        {recording && recording.points.length > 1 && (
+          <Polyline
+            positions={recording.points.map((p) => [p.lat, p.lng])}
+            pathOptions={{
+              color: "#f76c6c",
+              weight: 6,
+              opacity: 0.95,
+              dashArray: "1 10",
+              lineCap: "round",
+            }}
+          />
+        )}
 
         {located.map((photo) => (
           <Marker
@@ -114,34 +184,78 @@ export default function MapView({ photos, home, onOpen, onEditHome }: Props) {
 
       {/* Floating map controls */}
       <div className="map-controls">
-        <button
-          className="map-btn"
-          onClick={flyHome}
-          title={`Fly to ${home.name}`}
-          aria-label="Fly home"
-        >
+        <button className="map-btn" onClick={flyHome} aria-label="Fly home">
           🏠
         </button>
-        <button
-          className="map-btn"
-          onClick={onEditHome}
-          title="Set your home"
-          aria-label="Set home"
-        >
+        <button className="map-btn" onClick={onEditHome} aria-label="Set home">
           📍
         </button>
         <button
           className={"map-btn" + (showTrails ? " on" : "")}
           onClick={() => setShowTrails((v) => !v)}
-          title="Toggle hiking trails"
           aria-label="Toggle trails"
         >
           🥾
         </button>
+        <button
+          className="map-btn"
+          onClick={onManageTrails}
+          aria-label="My trails"
+        >
+          📜
+        </button>
       </div>
 
-      {located.length === 0 && (
-        <div className="camera-note" style={{ top: "auto", bottom: 120 }}>
+      {/* Trail recorder */}
+      {!recording ? (
+        <button className="record-pill" onClick={start}>
+          <span className="rec-dot" /> Record a trail
+        </button>
+      ) : naming ? (
+        <div className="record-panel">
+          <input
+            className="caption-input"
+            style={{ marginTop: 0 }}
+            placeholder="Name this trail…"
+            value={trailName}
+            autoFocus
+            onChange={(e) => setTrailName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && finishNaming()}
+          />
+          <div className="record-actions">
+            <button className="btn ghost" onClick={() => setNaming(false)}>
+              Back
+            </button>
+            <button className="btn" onClick={finishNaming}>
+              Save trail
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="record-panel">
+          <div className="record-stats">
+            <span className="rec-dot live" />
+            <b>{recording.distanceKm.toFixed(2)} km</b>
+            <span className="muted">{elapsed(now - recording.startedAt)}</span>
+            <span className="muted">{recording.points.length} pts</span>
+          </div>
+          <div className="record-actions">
+            <button className="btn danger" onClick={cancel}>
+              Discard
+            </button>
+            <button
+              className="btn"
+              onClick={() => setNaming(true)}
+              disabled={recording.points.length < 2}
+            >
+              Finish
+            </button>
+          </div>
+        </div>
+      )}
+
+      {located.length === 0 && !recording && (
+        <div className="camera-note" style={{ top: 76, bottom: "auto" }}>
           No pins yet — snap a photo and it'll appear here 📍
         </div>
       )}

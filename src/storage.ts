@@ -1,8 +1,9 @@
-import type { Home, Photo } from "./types";
+import type { Home, Photo, Trail } from "./types";
 
 const KEY = "tracam.photos.v1";
 const CHALLENGE_KEY = "tracam.challenges.v1";
 const HOME_KEY = "tracam.home.v1";
+const TRAILS_KEY = "tracam.trails.v1";
 
 /** Default home if the traveller hasn't set one yet: Israel. */
 export const DEFAULT_HOME: Home = {
@@ -74,6 +75,25 @@ export function loadHome(): Home {
 export function saveHome(home: Home): void {
   try {
     localStorage.setItem(HOME_KEY, JSON.stringify(home));
+  } catch {
+    /* ignore */
+  }
+}
+
+export function loadTrails(): Trail[] {
+  try {
+    const raw = localStorage.getItem(TRAILS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as Trail[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveTrails(trails: Trail[]): void {
+  try {
+    localStorage.setItem(TRAILS_KEY, JSON.stringify(trails));
   } catch {
     /* ignore */
   }

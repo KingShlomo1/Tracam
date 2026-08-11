@@ -23,4 +23,21 @@ export interface Home {
   name: string;
 }
 
+export interface TrailPoint {
+  lat: number;
+  lng: number;
+  /** Epoch millis when this point was recorded. */
+  t: number;
+}
+
+export interface Trail {
+  id: string;
+  name: string;
+  points: TrailPoint[];
+  startedAt: number;
+  endedAt: number;
+  /** Total length in kilometres. */
+  distanceKm: number;
+}
+
 export type TabId = "map" | "camera" | "gallery" | "tips";
