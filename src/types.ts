@@ -11,6 +11,16 @@ export interface Photo {
   caption?: string;
   /** Epoch millis. */
   takenAt: number;
+  /** Animal kinds detected in the photo, e.g. ["elephant"]. Empty = none found. */
+  animals?: string[];
+  /** True once we've run animal detection (so we don't re-scan forever). */
+  scanned?: boolean;
+}
+
+export interface Home {
+  lat: number;
+  lng: number;
+  name: string;
 }
 
 export type TabId = "map" | "camera" | "gallery" | "tips";

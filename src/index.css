@@ -313,6 +313,54 @@ button {
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.55));
 }
 
+.thumb-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  padding: 3px 7px;
+  box-shadow: var(--shadow-soft);
+}
+
+/* ---------- Filter chips ---------- */
+.chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 18px 6px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.chips::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex: 0 0 auto;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: var(--shadow-soft);
+  white-space: nowrap;
+}
+
+.chip.on {
+  background: var(--red-strong);
+  color: white;
+}
+
+.group-title {
+  font-size: 16px;
+  margin: 16px 20px 2px;
+  color: var(--red-strong);
+}
+
 /* ---------- Map ---------- */
 .map-wrap {
   position: absolute;
@@ -345,8 +393,63 @@ button {
   transform: rotate(-45deg) scale(1.5);
 }
 
+.pin-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  transform: rotate(-45deg);
+  font-size: 15px;
+  background: white;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-soft);
+}
+
+.home-pin {
+  font-size: 30px;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.25));
+  text-align: center;
+}
+
 .leaflet-popup-content-wrapper {
   border-radius: var(--radius) !important;
+}
+
+/* Floating map controls */
+.map-controls {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 600;
+}
+
+.map-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--white);
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+
+.map-btn:active {
+  transform: scale(0.92);
+}
+
+.map-btn.on {
+  background: var(--red-strong);
+  filter: none;
 }
 
 /* ---------- Tips & challenges ---------- */
@@ -505,6 +608,59 @@ button {
   color: var(--muted);
   font-size: 13px;
   margin-top: 2px;
+}
+
+.animal-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.animal-tag {
+  background: var(--red-tint);
+  color: var(--red-strong);
+  border-radius: var(--radius-pill);
+  padding: 4px 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.search-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  align-items: stretch;
+}
+
+.search-row .caption-input {
+  flex: 1;
+}
+
+.search-row .btn {
+  flex: 0 0 auto;
+}
+
+.results {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.result {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  text-align: left;
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  box-shadow: var(--shadow-soft);
+  font-size: 13.5px;
+  line-height: 1.35;
+  color: var(--text);
 }
 
 .modal .caption-input {

@@ -34,6 +34,15 @@ export default function PhotoModal({
         <div className="meta">
           <div className="place">{photo.place || "Somewhere lovely 🌍"}</div>
           <div className="when">{when}</div>
+          {photo.animals && photo.animals.length > 0 && (
+            <div className="animal-tags">
+              {photo.animals.map((a) => (
+                <span className="animal-tag" key={a}>
+                  🐾 {a}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
         <textarea
           className="caption-input"

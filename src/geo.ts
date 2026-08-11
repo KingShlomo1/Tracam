@@ -20,6 +20,37 @@ export function getCurrentPosition(): Promise<Coords | null> {
   });
 }
 
+export interface PlaceResult {
+  name: string;
+  lat: number;
+  lng: number;
+}
+
+/**
+ * Forward-geocode a search string (e.g. "Israel", "Kyoto") into a few candidate
+ * places using the free OpenStreetMap Nominatim service. Returns [] on failure.
+ */
+export async function searchPlaces(query: string): Promise<PlaceResult[]> {
+  const q = query.trim();
+  if (!q) return [];
+  try {
+    const url =
+      `https://nominatim.openstreetmap.org/search?format=jsonv2` +
+      `&limit=6&q=${encodeURIComponent(q)}`;
+    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
+    return data.map((d: any) => ({
+      name: d.display_name as string,
+      lat: parseFloat(d.lat),
+      lng: parseFloat(d.lon),
+    }));
+  } catch {
+    return [];
+  }
+}
+
 export interface PlaceInfo {
   place?: string;
   country?: string;
