@@ -87,6 +87,7 @@ export default function App() {
       {tab === "gallery" && (
         <GalleryView
           photos={photos}
+          trails={trails}
           onOpen={setSelected}
           onGoToCamera={() => setTab("camera")}
         />

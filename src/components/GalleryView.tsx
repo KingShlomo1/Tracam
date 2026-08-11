@@ -1,15 +1,44 @@
 import { useMemo, useState } from "react";
-import type { Photo } from "../types";
+import type { Photo, Trail } from "../types";
 
 interface Props {
   photos: Photo[];
+  trails: Trail[];
   onOpen: (photo: Photo) => void;
   onGoToCamera: () => void;
 }
 
+function StatTiles({ photos, trails }: { photos: Photo[]; trails: Trail[] }) {
+  const countries = new Set(photos.map((p) => p.country).filter(Boolean)).size;
+  const animals = photos.filter((p) => p.animals && p.animals.length > 0).length;
+  const km = trails.reduce((sum, t) => sum + t.distanceKm, 0);
+  const tiles = [
+    { emoji: "🌍", value: countries, label: countries === 1 ? "country" : "countries" },
+    { emoji: "📸", value: photos.length, label: photos.length === 1 ? "photo" : "photos" },
+    { emoji: "🐾", value: animals, label: "animals" },
+    { emoji: "🥾", value: `${km.toFixed(1)}`, label: "km walked" },
+  ];
+  return (
+    <div className="stats">
+      {tiles.map((t) => (
+        <div className="stat" key={t.label}>
+          <span className="stat-em">{t.emoji}</span>
+          <span className="stat-value">{t.value}</span>
+          <span className="stat-label">{t.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 type Filter = "all" | "animals" | string; // string = "country:<name>"
 
-export default function GalleryView({ photos, onOpen, onGoToCamera }: Props) {
+export default function GalleryView({
+  photos,
+  trails,
+  onOpen,
+  onGoToCamera,
+}: Props) {
   const [filter, setFilter] = useState<Filter>("all");
 
   const countries = useMemo(() => {
@@ -75,11 +104,10 @@ export default function GalleryView({ photos, onOpen, onGoToCamera }: Props) {
     <div className="screen">
       <header className="header">
         <h1>Gallery</h1>
-        <p>
-          {photos.length} memor{photos.length === 1 ? "y" : "ies"}
-          {countries.length > 0 && ` · ${countries.length} countr${countries.length === 1 ? "y" : "ies"}`}
-        </p>
+        <p>Your travel journey so far</p>
       </header>
+
+      <StatTiles photos={photos} trails={trails} />
 
       {/* Filter chips */}
       <div className="chips">

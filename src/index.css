@@ -324,6 +324,43 @@ button {
   box-shadow: var(--shadow-soft);
 }
 
+/* ---------- Journey stats ---------- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 4px 18px 10px;
+}
+
+.stat {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 12px 6px;
+  text-align: center;
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.stat-em {
+  font-size: 18px;
+}
+
+.stat-value {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--red-strong);
+  line-height: 1.1;
+}
+
+.stat-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
 /* ---------- Filter chips ---------- */
 .chips {
   display: flex;
@@ -413,6 +450,21 @@ button {
   font-size: 30px;
   filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.25));
   text-align: center;
+}
+
+.cluster {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--red-strong);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 16px;
+  border: 3px solid white;
+  box-shadow: var(--shadow);
 }
 
 .leaflet-popup-content-wrapper {

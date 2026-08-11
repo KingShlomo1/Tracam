@@ -7,6 +7,7 @@ import {
   useMap,
 } from "react-leaflet";
 import L from "leaflet";
+import MarkerClusterGroup from "react-leaflet-cluster";
 import type { Home, Photo, Trail } from "../types";
 import { useTrailRecorder } from "../hooks/useTrailRecorder";
 import { useWakeLock } from "../hooks/useWakeLock";
@@ -39,6 +40,16 @@ const homeIcon = L.divIcon({
   iconSize: [40, 40],
   iconAnchor: [20, 38],
 });
+
+/** Soft-red bubble showing how many photos are grouped together. */
+function clusterIcon(cluster: any) {
+  const count = cluster.getChildCount();
+  return L.divIcon({
+    html: `<div class="cluster">${count}</div>`,
+    className: "",
+    iconSize: L.point(46, 46, true),
+  });
+}
 
 function FitBounds({ photos, home }: { photos: Photo[]; home: Home }) {
   const map = useMap();
@@ -177,14 +188,21 @@ export default function MapView({
           />
         )}
 
-        {located.map((photo) => (
-          <Marker
-            key={photo.id}
-            position={[photo.lat, photo.lng]}
-            icon={photoIcon(photo)}
-            eventHandlers={{ click: () => onOpen(photo) }}
-          />
-        ))}
+        <MarkerClusterGroup
+          iconCreateFunction={clusterIcon}
+          showCoverageOnHover={false}
+          maxClusterRadius={50}
+          chunkedLoading
+        >
+          {located.map((photo) => (
+            <Marker
+              key={photo.id}
+              position={[photo.lat, photo.lng]}
+              icon={photoIcon(photo)}
+              eventHandlers={{ click: () => onOpen(photo) }}
+            />
+          ))}
+        </MarkerClusterGroup>
       </MapContainer>
 
       {/* Floating map controls */}
