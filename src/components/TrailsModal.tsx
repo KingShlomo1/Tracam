@@ -1,4 +1,5 @@
 import type { Trail } from "../types";
+import { shareTrailGpx } from "../gpx";
 
 interface Props {
   trails: Trail[];
@@ -40,6 +41,14 @@ export default function TrailsModal({ trails, onClose, onDelete }: Props) {
                     {new Date(t.startedAt).toLocaleDateString()}
                   </div>
                 </div>
+                <button
+                  className="check-del share"
+                  onClick={() => shareTrailGpx(t)}
+                  aria-label="Export trail as GPX"
+                  title="Export / share as GPX"
+                >
+                  📤
+                </button>
                 <button
                   className="check-del"
                   onClick={() => {

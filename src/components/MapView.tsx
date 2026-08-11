@@ -9,6 +9,7 @@ import {
 import L from "leaflet";
 import type { Home, Photo, Trail } from "../types";
 import { useTrailRecorder } from "../hooks/useTrailRecorder";
+import { useWakeLock } from "../hooks/useWakeLock";
 
 interface Props {
   photos: Photo[];
@@ -88,10 +89,14 @@ export default function MapView({
   const [showTrails, setShowTrails] = useState(false);
   const [naming, setNaming] = useState(false);
   const [trailName, setTrailName] = useState("");
+  const [keepAwake, setKeepAwake] = useState(true);
   const [now, setNow] = useState(Date.now());
   const mapRef = useRef<L.Map | null>(null);
 
   const { recording, start, stop, cancel } = useTrailRecorder(onSaveTrail);
+
+  // Keep the screen on while recording, if the traveller wants it.
+  useWakeLock(!!recording && keepAwake);
 
   // Tick the elapsed-time display while recording.
   useEffect(() => {
@@ -239,6 +244,13 @@ export default function MapView({
             <span className="muted">{elapsed(now - recording.startedAt)}</span>
             <span className="muted">{recording.points.length} pts</span>
           </div>
+          <button
+            className="awake-toggle"
+            onClick={() => setKeepAwake((v) => !v)}
+          >
+            <span className={"switch" + (keepAwake ? " on" : "")} />
+            Keep screen on while recording
+          </button>
           <div className="record-actions">
             <button className="btn danger" onClick={cancel}>
               Discard
