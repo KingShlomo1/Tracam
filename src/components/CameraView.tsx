@@ -9,42 +9,48 @@ interface Props {
 
 type Status = "idle" | "live" | "review" | "saving" | "nocamera";
 
+type Facing = "environment" | "user";
+
 export default function CameraView({ onSaved }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [captured, setCaptured] = useState<string | null>(null);
+  const [facing, setFacing] = useState<Facing>("environment");
+
+  async function startCamera(mode: Facing) {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: mode },
+        audio: false,
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play().catch(() => {});
+      }
+      setStatus("live");
+    } catch {
+      setStatus("nocamera");
+    }
+  }
 
   // Start the live camera on mount; clean up on unmount.
   useEffect(() => {
-    let cancelled = false;
-    async function start() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" },
-          audio: false,
-        });
-        if (cancelled) {
-          stream.getTracks().forEach((t) => t.stop());
-          return;
-        }
-        streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          await videoRef.current.play().catch(() => {});
-        }
-        setStatus("live");
-      } catch {
-        setStatus("nocamera");
-      }
-    }
-    start();
+    startCamera(facing);
     return () => {
-      cancelled = true;
       streamRef.current?.getTracks().forEach((t) => t.stop());
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  function flipCamera() {
+    const next: Facing = facing === "environment" ? "user" : "environment";
+    setFacing(next);
+    startCamera(next);
+  }
 
   function capture() {
     const video = videoRef.current;
@@ -135,7 +141,12 @@ export default function CameraView({ onSaved }: Props) {
         </div>
       ) : (
         <>
-          <video ref={videoRef} playsInline muted />
+          <video
+            ref={videoRef}
+            playsInline
+            muted
+            style={facing === "user" ? { transform: "scaleX(-1)" } : undefined}
+          />
           <div className="camera-note">
             Point at something lovely and tap to snap 📸
           </div>
@@ -148,7 +159,13 @@ export default function CameraView({ onSaved }: Props) {
               🖼️
             </button>
             <button className="shutter" onClick={capture} aria-label="Take photo" />
-            <span style={{ width: 54 }} />
+            <button
+              className="round-btn"
+              onClick={flipCamera}
+              aria-label="Switch camera"
+            >
+              🔄
+            </button>
           </div>
         </>
       )}
