@@ -57,30 +57,43 @@ npm run build
 npm run preview
 ```
 
-## Deploy to Cloudflare Pages
+## Deploy to Cloudflare
 
-Tracam is a static site, so Cloudflare Pages is a great fit.
+Tracam is a static single-page app. The repo includes a `wrangler.jsonc` that
+serves the built `dist/` folder as static assets, so deploying is one command.
 
-**Option A — connect the repo (recommended):**
+### Cloudflare Workers (this is what `*.workers.dev` uses)
 
-1. In the Cloudflare dashboard: **Workers & Pages → Create → Pages → Connect to
-   Git**, and pick this repo.
-2. Set the build settings:
-   - **Framework preset:** `Vite`
-   - **Build command:** `npm run build`
-   - **Build output directory:** `dist`
-3. Deploy. Every push to the branch will rebuild automatically.
-
-**Option B — deploy from your machine with Wrangler:**
+From your machine:
 
 ```bash
-npm run build
-npx wrangler pages deploy dist --project-name tracam
+npx wrangler login      # once, opens the browser to authorise
+npm run deploy          # builds, then `wrangler deploy`
 ```
 
-Cloudflare serves over HTTPS, so the **camera, GPS, and animal detection all
-work on your phone** once it's live. The included `public/_redirects` keeps
-everything routing to the app.
+That publishes the `tracam` Worker to `https://tracam.<your>.workers.dev`.
+
+> If you see Cloudflare's **“There is nothing here yet”** page, it means a
+> Worker exists but no app was uploaded to it yet — running `npm run deploy`
+> above (with `wrangler.jsonc` present) fixes that by uploading the built site.
+
+If instead you connected the repo in the dashboard (**Workers Builds**), set:
+
+- **Build command:** `npm run build`
+- **Deploy command:** `npx wrangler deploy`
+
+and it will pick up `wrangler.jsonc` automatically on the next push.
+
+### Or Cloudflare Pages
+
+Prefer Pages? **Workers & Pages → Create → Pages → Connect to Git**, then:
+
+- **Framework preset:** `Vite`
+- **Build command:** `npm run build`
+- **Build output directory:** `dist`
+
+Either way, Cloudflare serves over HTTPS, so the **camera, GPS, trail
+recording, and animal detection all work on your phone** once it's live.
 
 ## Install it on your phone
 

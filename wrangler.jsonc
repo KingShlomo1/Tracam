@@ -1,0 +1,12 @@
+{
+  // Cloudflare Workers config for serving Tracam as a static single-page app.
+  // Deploy with:  npm run deploy   (runs the build, then `wrangler deploy`)
+  "name": "tracam",
+  "compatibility_date": "2024-11-01",
+  "assets": {
+    // The Vite build output — this is what gets served.
+    "directory": "./dist",
+    // Serve index.html for unknown routes so the app's own navigation works.
+    "not_found_handling": "single-page-application"
+  }
+}
