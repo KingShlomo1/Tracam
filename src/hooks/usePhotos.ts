@@ -24,5 +24,10 @@ export function usePhotos() {
     setPhotos((prev) => prev.filter((p) => p.id !== id));
   }, []);
 
-  return { photos, addPhoto, updatePhoto, removePhoto };
+  const removeMany = useCallback((ids: string[]) => {
+    const set = new Set(ids);
+    setPhotos((prev) => prev.filter((p) => !set.has(p.id)));
+  }, []);
+
+  return { photos, addPhoto, updatePhoto, removePhoto, removeMany };
 }

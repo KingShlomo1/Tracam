@@ -13,7 +13,7 @@ import HomeModal from "./components/HomeModal";
 import TrailsModal from "./components/TrailsModal";
 
 export default function App() {
-  const { photos, addPhoto, updatePhoto, removePhoto } = usePhotos();
+  const { photos, addPhoto, updatePhoto, removePhoto, removeMany } = usePhotos();
   const [tab, setTab] = useState<TabId>("map");
   const [selected, setSelected] = useState<Photo | null>(null);
   const [home, setHome] = useState<Home>(() => loadHome());
@@ -79,6 +79,7 @@ export default function App() {
           onEditHome={() => setHomeOpen(true)}
           onSaveTrail={addTrail}
           onManageTrails={() => setTrailsOpen(true)}
+          onAddPhoto={addPhoto}
         />
       )}
 
@@ -90,6 +91,7 @@ export default function App() {
           trails={trails}
           onOpen={setSelected}
           onGoToCamera={() => setTab("camera")}
+          onDeleteMany={removeMany}
         />
       )}
 
@@ -102,6 +104,10 @@ export default function App() {
           photo={selected}
           onClose={() => setSelected(null)}
           onSaveCaption={(id, caption) => updatePhoto(id, { caption })}
+          onToggleFavorite={(id) => {
+            updatePhoto(id, { favorite: !selected.favorite });
+            setSelected({ ...selected, favorite: !selected.favorite });
+          }}
           onDelete={removePhoto}
         />
       )}

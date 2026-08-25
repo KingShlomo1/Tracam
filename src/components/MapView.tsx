@@ -5,12 +5,16 @@ import {
   Marker,
   Polyline,
   useMap,
+  useMapEvents,
 } from "react-leaflet";
 import L from "leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import type { Home, Photo, Trail } from "../types";
 import { useTrailRecorder } from "../hooks/useTrailRecorder";
 import { useWakeLock } from "../hooks/useWakeLock";
+import { compressFile } from "../image";
+import { reverseGeocode } from "../geo";
+import Icon from "./Icon";
 
 interface Props {
   photos: Photo[];
@@ -20,6 +24,30 @@ interface Props {
   onEditHome: () => void;
   onSaveTrail: (trail: Trail) => void;
   onManageTrails: () => void;
+  onAddPhoto: (photo: Photo) => void;
+}
+
+const placeIcon = L.divIcon({
+  className: "",
+  html: `<div class="place-pin"></div>`,
+  iconSize: [30, 30],
+  iconAnchor: [15, 28],
+});
+
+/** Lets a map click move the placement pin while adding a photo. */
+function ClickToPlace({
+  active,
+  onPick,
+}: {
+  active: boolean;
+  onPick: (latlng: { lat: number; lng: number }) => void;
+}) {
+  useMapEvents({
+    click(e) {
+      if (active) onPick({ lat: e.latlng.lat, lng: e.latlng.lng });
+    },
+  });
+  return null;
 }
 
 function photoIcon(photo: Photo) {
@@ -77,7 +105,9 @@ function FitBounds({ photos, home }: { photos: Photo[]; home: Home }) {
 
 function MapRef({ onReady }: { onReady: (m: L.Map) => void }) {
   const map = useMap();
-  useEffect(() => onReady(map), [map, onReady]);
+  useEffect(() => {
+    onReady(map);
+  }, [map, onReady]);
   return null;
 }
 
@@ -96,6 +126,7 @@ export default function MapView({
   onEditHome,
   onSaveTrail,
   onManageTrails,
+  onAddPhoto,
 }: Props) {
   const [showTrails, setShowTrails] = useState(false);
   const [naming, setNaming] = useState(false);
@@ -103,6 +134,47 @@ export default function MapView({
   const [keepAwake, setKeepAwake] = useState(true);
   const [now, setNow] = useState(Date.now());
   const mapRef = useRef<L.Map | null>(null);
+  const addFileRef = useRef<HTMLInputElement>(null);
+
+  // "Add a photo to a spot" flow.
+  const [placing, setPlacing] = useState<string | null>(null); // image data URL
+  const [placeAt, setPlaceAt] = useState<{ lat: number; lng: number } | null>(
+    null
+  );
+  const [savingPlace, setSavingPlace] = useState(false);
+
+  async function onAddFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const image = await compressFile(file);
+    const c = mapRef.current?.getCenter();
+    setPlaceAt(c ? { lat: c.lat, lng: c.lng } : { lat: home.lat, lng: home.lng });
+    setPlacing(image);
+  }
+
+  async function savePlaced() {
+    if (!placing || !placeAt) return;
+    setSavingPlace(true);
+    const info = await reverseGeocode(placeAt);
+    onAddPhoto({
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      image: placing,
+      lat: placeAt.lat,
+      lng: placeAt.lng,
+      place: info.place,
+      country: info.country,
+      takenAt: Date.now(),
+    });
+    setPlacing(null);
+    setPlaceAt(null);
+    setSavingPlace(false);
+  }
+
+  function cancelPlaced() {
+    setPlacing(null);
+    setPlaceAt(null);
+  }
 
   const { recording, start, stop, cancel } = useTrailRecorder(onSaveTrail);
 
@@ -162,6 +234,21 @@ export default function MapView({
         )}
         <MapRef onReady={(m) => (mapRef.current = m)} />
         <FitBounds photos={photos} home={home} />
+        <ClickToPlace active={!!placing} onPick={setPlaceAt} />
+
+        {placing && placeAt && (
+          <Marker
+            position={[placeAt.lat, placeAt.lng]}
+            icon={placeIcon}
+            draggable
+            eventHandlers={{
+              dragend: (e) => {
+                const p = e.target.getLatLng();
+                setPlaceAt({ lat: p.lat, lng: p.lng });
+              },
+            }}
+          />
+        )}
 
         <Marker position={[home.lat, home.lng]} icon={homeIcon} />
 
@@ -208,29 +295,65 @@ export default function MapView({
       {/* Floating map controls */}
       <div className="map-controls">
         <button className="map-btn" onClick={flyHome} aria-label="Fly home">
-          🏠
+          <Icon name="home" size={21} />
         </button>
         <button className="map-btn" onClick={onEditHome} aria-label="Set home">
-          📍
+          <Icon name="pin" size={21} />
         </button>
         <button
           className={"map-btn" + (showTrails ? " on" : "")}
           onClick={() => setShowTrails((v) => !v)}
           aria-label="Toggle trails"
         >
-          🥾
+          <Icon name="boot" size={21} />
         </button>
         <button
           className="map-btn"
           onClick={onManageTrails}
           aria-label="My trails"
         >
-          📜
+          <Icon name="route" size={21} />
+        </button>
+        <button
+          className="map-btn accent"
+          onClick={() => addFileRef.current?.click()}
+          aria-label="Add a photo to the map"
+        >
+          <Icon name="plus" size={22} />
         </button>
       </div>
 
+      <input
+        ref={addFileRef}
+        className="hidden-input"
+        type="file"
+        accept="image/*"
+        onChange={onAddFile}
+      />
+
+      {/* Placing a photo on the map */}
+      {placing && (
+        <div className="record-panel">
+          <div className="place-head">
+            <img className="place-thumb" src={placing} alt="" />
+            <div>
+              <div className="place-title-sm">Drop it on the map</div>
+              <div className="muted">Tap the map or drag the pin to the spot</div>
+            </div>
+          </div>
+          <div className="record-actions">
+            <button className="btn ghost" onClick={cancelPlaced}>
+              Cancel
+            </button>
+            <button className="btn" onClick={savePlaced} disabled={savingPlace}>
+              {savingPlace ? "Saving…" : "Save here"}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Trail recorder */}
-      {!recording ? (
+      {placing ? null : !recording ? (
         <button className="record-pill" onClick={start}>
           <span className="rec-dot" /> Record a trail
         </button>

@@ -15,6 +15,8 @@ export interface Photo {
   animals?: string[];
   /** True once we've run animal detection (so we don't re-scan forever). */
   scanned?: boolean;
+  /** Marked as a favorite by the traveller. */
+  favorite?: boolean;
 }
 
 export interface Home {
