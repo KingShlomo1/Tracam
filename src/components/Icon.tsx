@@ -26,7 +26,9 @@ export type IconName =
   | "check"
   | "sort"
   | "plus"
-  | "chevron";
+  | "chevron"
+  | "sparkles"
+  | "locate";
 
 // Clean line icons drawn on a 24x24 grid, using currentColor.
 const PATHS: Record<IconName, JSX.Element> = {
@@ -131,6 +133,18 @@ const PATHS: Record<IconName, JSX.Element> = {
   ),
   plus: <path d="M12 5v14M5 12h14" />,
   chevron: <path d="m9 6 6 6-6 6" />,
+  sparkles: (
+    <>
+      <path d="M12 3.5 13.7 9l5.3 1.7L13.7 12.4 12 18l-1.7-5.6L5 10.7 10.3 9 12 3.5Z" />
+      <path d="M18.5 15.5l.7 2.1 2.1.7-2.1.7-.7 2.1-.7-2.1-2.1-.7 2.1-.7.7-2.1Z" />
+    </>
+  ),
+  locate: (
+    <>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+    </>
+  ),
 };
 
 const FILLED = new Set<IconName>(["record"]);

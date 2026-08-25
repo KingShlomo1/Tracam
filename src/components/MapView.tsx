@@ -25,7 +25,15 @@ interface Props {
   onSaveTrail: (trail: Trail) => void;
   onManageTrails: () => void;
   onAddPhoto: (photo: Photo) => void;
+  onOpenAI: () => void;
 }
+
+const meIcon = L.divIcon({
+  className: "",
+  html: `<div class="me-dot"><div class="me-core"></div></div>`,
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+});
 
 const placeIcon = L.divIcon({
   className: "",
@@ -127,6 +135,7 @@ export default function MapView({
   onSaveTrail,
   onManageTrails,
   onAddPhoto,
+  onOpenAI,
 }: Props) {
   const [showTrails, setShowTrails] = useState(false);
   const [naming, setNaming] = useState(false);
@@ -142,6 +151,22 @@ export default function MapView({
     null
   );
   const [savingPlace, setSavingPlace] = useState(false);
+  const [mePos, setMePos] = useState<{ lat: number; lng: number } | null>(null);
+
+  // Live "you are here" dot — updates as you move.
+  useEffect(() => {
+    if (!("geolocation" in navigator)) return;
+    const id = navigator.geolocation.watchPosition(
+      (pos) => setMePos({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => {},
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 }
+    );
+    return () => navigator.geolocation.clearWatch(id);
+  }, []);
+
+  function locateMe() {
+    if (mePos) mapRef.current?.flyTo([mePos.lat, mePos.lng], 15, { duration: 0.8 });
+  }
 
   async function onAddFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -252,6 +277,8 @@ export default function MapView({
 
         <Marker position={[home.lat, home.lng]} icon={homeIcon} />
 
+        {mePos && <Marker position={[mePos.lat, mePos.lng]} icon={meIcon} />}
+
         {/* Saved trails */}
         {trails.map((t) => (
           <Polyline
@@ -294,6 +321,16 @@ export default function MapView({
 
       {/* Floating map controls */}
       <div className="map-controls">
+        <button
+          className="map-btn accent-soft"
+          onClick={onOpenAI}
+          aria-label="AI place finder"
+        >
+          <Icon name="sparkles" size={21} />
+        </button>
+        <button className="map-btn" onClick={locateMe} aria-label="Locate me">
+          <Icon name="locate" size={21} />
+        </button>
         <button className="map-btn" onClick={flyHome} aria-label="Fly home">
           <Icon name="home" size={21} />
         </button>

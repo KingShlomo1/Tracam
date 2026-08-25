@@ -1,12 +1,14 @@
 {
-  // Cloudflare Workers config for serving Tracam as a static single-page app.
+  // Cloudflare Worker config: serves the built app AND the /api AI endpoint.
   // Deploy with:  npm run deploy   (runs the build, then `wrangler deploy`)
+  // For the AI locator, add a secret named ANTHROPIC_API_KEY in the Cloudflare
+  // dashboard (Settings -> Variables and Secrets).
   "name": "tracam",
+  "main": "worker/index.ts",
   "compatibility_date": "2024-11-01",
   "assets": {
-    // The Vite build output — this is what gets served.
     "directory": "./dist",
-    // Serve index.html for unknown routes so the app's own navigation works.
+    "binding": "ASSETS",
     "not_found_handling": "single-page-application"
   }
 }

@@ -15,6 +15,9 @@ Everything is white and light soft red, and rounded and friendly.
 - 🔴 **Record your own trail** — tap “Record a trail” and walk; Tracam traces
   your route live, shows distance and time, and saves it to the map (📜 to
   view/delete your trails)
+- 🤖 **AI place finder** — describe where you were ("the Erawan waterfall in
+  Kanchanaburi, Thailand") and Tracam pins it on the map and attaches your photo
+- 🔵 **Live location** — a "you are here" dot that follows you, plus a locate button
 - 📱 **Installable** — add Tracam to your home screen and it runs full-screen
   like a real app, and opens (with your photos) even offline
 - 🏠 **Home** — set any place as your home (defaults to Israel). Search for it or
@@ -83,6 +86,23 @@ If instead you connected the repo in the dashboard (**Workers Builds**), set:
 - **Deploy command:** `npx wrangler deploy`
 
 and it will pick up `wrangler.jsonc` automatically on the next push.
+
+### Enable the AI place finder
+
+The app is a small full-stack Worker: `worker/index.ts` serves the site and a
+`POST /api/locate` endpoint. That endpoint uses Claude (the fast, inexpensive
+`claude-haiku-4-5` model) to turn your description into a place query, then
+geocodes it — so your API key stays server-side, never in the browser.
+
+To turn it on, add your Anthropic API key as a **secret** (not a plain variable):
+
+1. Cloudflare dashboard → your **tracam** Worker → **Settings** →
+   **Variables and Secrets**.
+2. Add a **Secret** named exactly `ANTHROPIC_API_KEY` with your key as the value.
+3. Redeploy (any push, or **Deployments → Retry**).
+
+Get a key at <https://console.anthropic.com>. Until it's set, the AI button
+politely says it isn't configured yet; everything else works without it.
 
 ### Or Cloudflare Pages
 

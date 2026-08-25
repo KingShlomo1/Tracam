@@ -11,6 +11,7 @@ import TipsView from "./components/TipsView";
 import PhotoModal from "./components/PhotoModal";
 import HomeModal from "./components/HomeModal";
 import TrailsModal from "./components/TrailsModal";
+import AILocateModal from "./components/AILocateModal";
 
 export default function App() {
   const { photos, addPhoto, updatePhoto, removePhoto, removeMany } = usePhotos();
@@ -20,6 +21,7 @@ export default function App() {
   const [homeOpen, setHomeOpen] = useState(false);
   const [trails, setTrails] = useState<Trail[]>(() => loadTrails());
   const [trailsOpen, setTrailsOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
 
   function addTrail(trail: Trail) {
     setTrails((prev) => {
@@ -80,6 +82,7 @@ export default function App() {
           onSaveTrail={addTrail}
           onManageTrails={() => setTrailsOpen(true)}
           onAddPhoto={addPhoto}
+          onOpenAI={() => setAiOpen(true)}
         />
       )}
 
@@ -125,6 +128,16 @@ export default function App() {
           trails={trails}
           onClose={() => setTrailsOpen(false)}
           onDelete={removeTrail}
+        />
+      )}
+
+      {aiOpen && (
+        <AILocateModal
+          onClose={() => setAiOpen(false)}
+          onAdd={(photo) => {
+            addPhoto(photo);
+            setTab("map");
+          }}
         />
       )}
     </div>
