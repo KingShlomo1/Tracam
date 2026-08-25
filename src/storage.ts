@@ -5,6 +5,14 @@ const CHALLENGE_KEY = "tracam.challenges.v1";
 const HOME_KEY = "tracam.home.v1";
 const TRAILS_KEY = "tracam.trails.v1";
 
+/** All localStorage keys Tracam owns, for backup/restore. */
+export const STORAGE_KEYS = {
+  photos: KEY,
+  challenges: CHALLENGE_KEY,
+  home: HOME_KEY,
+  trails: TRAILS_KEY,
+} as const;
+
 /** Default home if the traveller hasn't set one yet: Israel. */
 export const DEFAULT_HOME: Home = {
   lat: 31.4461,

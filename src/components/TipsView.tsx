@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Photo } from "../types";
 import { tipsForCountry } from "../data/tips";
 import { CHALLENGES } from "../data/challenges";
 import { loadDoneChallenges, saveDoneChallenges } from "../storage";
 import { getCurrentPosition, reverseGeocode } from "../geo";
+import { exportBackup, importBackup } from "../backup";
 
 interface Props {
   photos: Photo[];
@@ -12,6 +13,20 @@ interface Props {
 export default function TipsView({ photos }: Props) {
   const [liveCountry, setLiveCountry] = useState<string | undefined>();
   const [done, setDone] = useState<string[]>(() => loadDoneChallenges());
+  const importRef = useRef<HTMLInputElement>(null);
+
+  async function onImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    try {
+      await importBackup(file);
+      alert("Backup restored! Reloading Tracam…");
+      location.reload();
+    } catch (err: any) {
+      alert(err?.message || "Couldn't restore that backup.");
+    }
+  }
 
   // Prefer the live location; fall back to the most recent located photo.
   const fallbackCountry = useMemo(
@@ -85,6 +100,32 @@ export default function TipsView({ photos }: Props) {
             </button>
           );
         })}
+
+        <h2>Keep your memories safe</h2>
+        <div className="tips-card">
+          <p className="backup-note">
+            Your photos live on this device. Save a backup file you can keep or
+            move to a new phone — then restore it anytime.
+          </p>
+          <div className="backup-actions">
+            <button className="btn" onClick={exportBackup}>
+              Export backup
+            </button>
+            <button
+              className="btn ghost"
+              onClick={() => importRef.current?.click()}
+            >
+              Restore
+            </button>
+          </div>
+          <input
+            ref={importRef}
+            className="hidden-input"
+            type="file"
+            accept="application/json,.json"
+            onChange={onImport}
+          />
+        </div>
       </div>
     </div>
   );

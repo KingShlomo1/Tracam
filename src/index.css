@@ -971,6 +971,22 @@ button {
   font-weight: 700;
 }
 
+.backup-note {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.backup-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.backup-actions .btn {
+  flex: 1;
+}
+
 /* ---------- Photo modal ---------- */
 .modal-backdrop {
   position: fixed;
